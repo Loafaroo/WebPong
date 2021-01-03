@@ -25,6 +25,8 @@ def main():
     Paddle1 = Player1()
     Paddle2 = Player2()
     ball = Ball()
+
+    requests.get('http://127.0.0.1:5000/joinserver')
         
     State = LogicState(Paddle1, Paddle2, ball, screen) # the darkness on the face of the deep
     

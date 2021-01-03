@@ -39,39 +39,6 @@ class Player():
         self.width = player_width
         self.height = player_height
         
-                
-    def update_movement(self):
-        self.accelerate()
-        self.update_position()
-
-    def accelerate(self):
-        if self.moving != None:
-            self.velocity = _velocity[self.moving]
-        else:
-            self.velocity = [0,0]
-
-    def update_position(self):
-       #TODO: add boundaries so dude doesn't go off the map
-        self.Y = np.clip(self.Y + self.velocity[1], 0, height - player_height)
-
-    def update_animation(self):
-        pass
-        
-    def step_animation(self):        
-        pass
-
-    def detail_step_animation(self):        
-        pass
-
-    def direction_listen(self, keys):
-        if keys[self.k_up]:
-            self.moving = UP                            
-            
-        elif keys[self.k_down]:
-            self.moving = DOWN
-
-        else:
-            self.moving = None
 
     def Draw(self, screen):
         new_rect = pygame.Rect(self.X, self.Y, player_width, player_height)
@@ -99,44 +66,11 @@ class Ball(Player):
         self.velocity = [0,0]
         self.width = 10
         self.height = 10
-
-    def serve(self):
-        self.velocity = [random.uniform(-4, 4), random.uniform(-1, 1)]
-
-    def update(self, player1, player2):
-        if self.Y_Collision():
-            self.velocity[1] = -self.velocity[1]
-
-        if self.Player1_Collision(player1):
-            self.velocity[0] = abs(self.velocity[0])
-        if self.Player2_Collision(player2):
-            self.velocity[0] = -abs(self.velocity[0])
-            
-        self.X = self.X + self.velocity[0]
-        self.Y = self.Y + self.velocity[1]
         
     def Draw(self, screen):
         new_rect = pygame.Rect(self.X, self.Y, self.width, self.height)
         pygame.draw.rect(screen, white, new_rect)
 
-    def Y_Collision(self):
-        if self.Y < 0 or self.Y + self.height > height:
-            return True
-        else: return False
-
-    def Player1_Collision(self, player1):
-        if abs(self.X - (player1.X + player1.width - 2)) < 2:
-            if self.Y -self.width > player1.Y and self.Y < player1.Y + player2.height:
-                return True
-    def Player2_Collision(self, player2):
-        if abs((self.X + self.width )- (player2.X + 2)) < 2:
-            if self.Y -self.width > player2.Y and self.Y < player2.Y + player2.height:
-                return True
-
-    def listen(self, keys):
-        if keys[K_RETURN]:
-            self.__init__()
-            self.serve()
         
         
 class LogicState():
@@ -148,7 +82,7 @@ class LogicState():
         self.ball = Ball
         self.screen = screen
 
-        self.gameState = 'play'
+        self.gameState = 'wait to join'
 
     """
     Main Loop
@@ -167,7 +101,8 @@ class LogicState():
                        'S':keys[ord('s')],
                        'up':keys[K_UP],
                        'down':keys[K_DOWN],
-                       'enter':keys[K_RETURN]}
+                       'enter':keys[K_RETURN]
+                       }
 
         r = requests.get('http://127.0.0.1:5000/update', keys_params)
 
@@ -175,6 +110,7 @@ class LogicState():
         self.Player2.Y = r.json()['player2_y']
         self.ball.X = r.json()['ball_x']
         self.ball.Y = r.json()['ball_y']
+        self.gameState = r.json()['gameState']
         
     def Draw(self):        
         self.Player1.Draw(self.screen)
